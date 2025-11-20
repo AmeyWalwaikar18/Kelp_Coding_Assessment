@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Analytics Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fafafa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .distribution-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .label {
+            width: 120px;
+        }
+
+        .bar-container {
+            flex: 1;
+            background: #eaeaea;
+            height: 20px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            background: #4a6cf7;
+            transition: width 0.3s ease;
+        }
+
+        .percentage {
+            width: 50px;
+            text-align: right;
+            font-size: 13px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        th, td {
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        th {
+            background: #f3f3f3;
+            font-weight: bold;
+        }
+
+        .loading {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>User Analytics Dashboard</h1>
+
+    <div class="card">
+        <h2>Age Distribution</h2>
+        <div id="ageDistribution" class="loading">Loading...</div>
+    </div>
+
+    <div class="card">
+        <h2>All Users</h2>
+        <div id="usersTable" class="loading">Loading...</div>
+    </div>
+
+</div>
+
+<script>
+    async function loadAgeDistribution() {
+        try {
+            const response = await fetch('/api/age-distribution');
+            const data = await response.json();
+            
+            const container = document.getElementById('ageDistribution');
+            container.innerHTML = '';
+            
+            for (const [category, percentage] of Object.entries(data.distribution)) {
+                const row = document.createElement('div');
+                row.className = 'distribution-item';
+                row.innerHTML = `
+                    <div class="label">${category}</div>
+                    <div class="bar-container">
+                        <div class="bar" style="width:${percentage}%"></div>
+                    </div>
+                    <div class="percentage">${percentage}%</div>
+                `;
+                container.appendChild(row);
+            }
+        } catch {
+            document.getElementById('ageDistribution').innerHTML = "Error loading data.";
+        }
+    }
+
+    async function loadUsers() {
+        try {
+            const response = await fetch('/api/users');
+            const users = await response.json();
+
+            const container = document.getElementById('usersTable');
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Name</th><th>Age</th><th>City</th><th>State</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => `
+                            <tr>
+                                <td>${user.id}</td>
+                                <td>${user.name}</td>
+                                <td>${user.age}</td>
+                                <td>${user.address?.city || '-'}</td>
+                                <td>${user.address?.state || '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch {
+            document.getElementById('usersTable').innerHTML = "Error loading users.";
+        }
+    }
+
+    loadAgeDistribution();
+    loadUsers();
+</script>
+
+</body>
+</html>

@@ -11,8 +11,12 @@ const connection = new Client({
     user: process.env.DB_USER,
     port: process.env.DB_PORT,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+    database: process.env.DB_NAME,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
+
 
 // middleware because we used express and the public thing to pass all the public apis
 app.use(express.json());
